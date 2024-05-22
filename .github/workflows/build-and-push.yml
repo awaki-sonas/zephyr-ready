@@ -10,6 +10,12 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
+      - name: Workaround for running out of disk space
+        run: |
+          sudo rm -rf /var/lib/docker/tmp /var/lib/buildkit
+          sudo mkdir -p /mnt/tmp/docker /mnt/tmp/buildkit
+          sudo ln -s /mnt/tmp/docker /var/lib/docker/tmp
+          sudo ln -s /mnt/tmp/buildkit /var/lib/buildkit
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
@@ -18,11 +24,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Workaround for running out of disk space
-        run: |
-          sudo rm -rf /var/lib/docker/tmp
-          sudo mkdir -p /mnt/tmp
-          sudo ln -s /mnt/tmp /var/lib/docker/tmp
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
